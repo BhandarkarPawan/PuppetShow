@@ -4,8 +4,28 @@
 #define pi 3.141
 #define DEG2RAD 3.14159/180.0
 
+float max( float a, float b){
+	return a>b ? a : b;
+
+}
+
+float min( float a, float b){
+	return a<b ? a : b;
+
+}
+
+
 
 int stage, i;
+float w;   // Stores window width
+float h;   // Stores window height
+int k;     // global parameter that decides the display  
+int c;	   // Controls the curtain movement
+int t;     // Used to record time of button click 
+
+int open = 0;  // Whether the cutain is being closed or opened 
+
+float ra, la, rl, ll;  // Right Arm, Left Arm, Right Leg and Left Leg angles 
 
 
 void delay(int m)
@@ -16,6 +36,9 @@ void delay(int m)
 
 void myInit(void) 
 { 
+    k = 0;
+    ra = la = rl = ll = 0;
+
     // making background color black as first  
     glClearColor(0.0, 0.0, 0.0, 1.0); 
       
@@ -43,6 +66,7 @@ void circle(float X, float Y, float radius){
 	glEnd(); 
 }
 
+
 void ellipse(int radiusX, int radiusY,int offsetX, int offsetY){
 	int e;
 
@@ -57,203 +81,246 @@ void ellipse(int radiusX, int radiusY,int offsetX, int offsetY){
 
 	glEnd();
 }
+
+
+void rotate(float x, float y, float angle){
+
+	glTranslatef(x,y,0.0); // 3. Translate to the object's position.
+	glRotatef(angle,0.0,0.0,1.0); // 2. Rotate the object.
+	glTranslatef(-x,-y,0.0); // 1. Translate to the origin.
+}
  
 
 void puppet(void)  
 { 
 	glColor3f(0/255.0, 0/255.0, 0/255.0);
 	glClear(GL_COLOR_BUFFER_BIT); 
-	for(int k =0; k < 100000; k++){	
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		float w = glutGet(GLUT_WINDOW_WIDTH);
-		float h = glutGet(GLUT_WINDOW_HEIGHT);		
-		float x, y, i; 
 
-		// Reference point used to draw rest of the puppet.  			
-		float Y = h/3;
-		float X = w/2;
+	float x, y, i; 
 
-		int radiusX = 50;
-		int radiusY = 10;
+	// Reference point used to draw rest of the puppet.  			
+	float Y = h/3;
+	float X = w/2;
 
-		int r = 50; // Size of the head 
-		
-		// Strings
-		glColor3f(1, 1, 1);
-		glBegin(GL_LINES);
-	    	glVertex2f(w/2 + 40, 0);
-	    	glVertex2f(X + r + 10 + 2* radiusX,  Y + r + 10);
-		glEnd();
+	int radiusX = 50;
+	int radiusY = 10;
 
-		glBegin(GL_LINES);
-	    	glVertex2f(w/2 - 40, 0);
-	    	glVertex2f(X - r - 10 - 2* radiusX,  Y + r + 10);
-		glEnd();
-		
-		glBegin(GL_LINES);
-	    	glVertex2f(w/2 + 20, 0);
-	    	glVertex2f(X + r + 10 +  radiusX,  Y + r + 10);
-		glEnd();
+	int r = 50; // Size of the head 
 
-		glBegin(GL_LINES);
-	    	glVertex2f(w/2 - 20, 0);
-	    	glVertex2f(X - r - 10 -  radiusX,  Y + r + 10);
-		glEnd();
+	// Floor  =====================================================================
 
-		
-		//Walls 
-		glColor3f(138/255.0, 109/255.0, 81/255.0);
-		
-		// Right
-		glBegin(GL_POLYGON);		
-		glVertex2i(w - 40, h - 250); 
-		glVertex2i(w, h - 100);
-		glVertex2i(w, 0);
-		glVertex2i(w - 40, 0); 
-		glEnd();
-			
-		// Left
-		glBegin(GL_POLYGON);		
-		glVertex2i(40, h - 250); 
-		glVertex2i(0, h - 100);
-		glVertex2i(0, 0);
-		glVertex2i(40, 0); 
-		glEnd();
-			
-			
-		
-		// Curtains 
-		glColor3f(232/255.0, 60/255.0, 60/255.0);
-		circle(w/2, -400, 500);
-		glColor3f(189/255.0, 34/255.0, 34/255.0);
-		circle(w/2 + 400, -400, 500);
-		circle(w/2 - 400, -400, 500);
-		glColor3f(232/255.0, 60/255.0, 60/255.0);
-		circle(-350, 0, 500);
-		circle(w + 350, 0, 500);
-
-		
-		//Floor 
-		glColor3f(94/255.0, 64/255.0, 37/255.0);
-		glBegin(GL_POLYGON);
-		glVertex2i( 40, h - 250); 
-		glVertex2i( w - 40,  h - 250);
-		glVertex2i(w, h - 100);
-		glVertex2i( 0 , h - 100);
-		glEnd(); 
-		
-		glColor3f(50/255.0, 20/255.0, 0/255.0);
-		glBegin(GL_POLYGON);
-		glVertex2i(w, h - 100);
-		glVertex2i( 0 , h - 100);
-		glVertex2i( 0 , h - 80);
-		glVertex2i( w , h - 80);
-		glEnd(); 
-
-		// Ground (Black)
-		glColor3f(0/255.0, 0/255.0, 0/255.0);
-		glBegin(GL_POLYGON);
-		glVertex2i( 0 , h - 80);
-		glVertex2i( w , h - 80);
-		glVertex2i( w , h );
-		glVertex2i( 0 , h );
-		
-		glEnd(); 
-
-
-		glColor3f(1.0, 1.0, 1.0);
-		// Head of the puppet
-		glColor3f(209/255.0, 175/255.0, 90/255.0);
-		circle(X, Y, r);
+	glColor3f(94/255.0, 64/255.0, 37/255.0);
+	glBegin(GL_POLYGON);
+	glVertex2i( 40, h - 250); 
+	glVertex2i( w - 40,  h - 250);
+	glVertex2i(w, h - 100);
+	glVertex2i( 0 , h - 100);
+	glEnd(); 
+	
+	glColor3f(50/255.0, 20/255.0, 0/255.0);
+	glBegin(GL_POLYGON);
+	glVertex2i(w, h - 100);
+	glVertex2i( 0 , h - 100);
+	glVertex2i( 0 , h - 80);
+	glVertex2i( w , h - 80);
+	glEnd(); 
 
 	
-		int e;
-		
-		// Arms 
-		
-		glColor3f(209/255.0, 175/255.0, 90/255.0);
-		ellipse(radiusX, radiusY, X - r - 10 - 1.5*(radiusX),  Y + r + 10);
-		ellipse(radiusX, radiusY, X + r + 10 + 1.5*(radiusX),  Y + r + 10);
-		glColor3f(255/255.0, 123/255.0, 0/255.0);
-		ellipse(radiusX, radiusY, X + r + 10 + radiusX/2,  Y + r + 10);
-		ellipse(radiusX, radiusY, X - r - 10 - radiusX/2,  Y + r + 10);
-		
-		// Legs
-		glColor3f(209/255.0, 175/255.0, 90/255.0);
-		ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + (1.5*radiusX));
-		ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + (1.5*radiusX));
+	// Strings  =====================================================================
+	glColor3f(1, 1, 1);
 
-		glColor3f(68/255.0, 99/255.0, 173/255.0);
-		ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + radiusX/2);
-		ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + radiusX/2);
-		
-		// Torso of the puppet 
-		glColor3f(255/255.0, 123/255.0, 28/255.0);
-		glBegin(GL_POLYGON);
-		glVertex2i(X - r - 10, Y + r); 
-		glVertex2i(X + r + 10, Y + r);
-		glVertex2i(X + r - 15, Y + r + 150);
-		glVertex2i(X - r + 15, Y + r + 150);
-		glEnd(); 
+	// Right Arm
+	rotate(X + r + 10 , Y + r + 10, ra);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 + 160, 0);
+    	glVertex2f(X + r + 10 + 2* radiusX,  Y + r + 10);
+	glEnd();
+	rotate(X + r + 10 , Y + r + 10, -ra);
+
+	// Left Arm 
+	rotate(X - r - 10 , Y + r + 10, -la);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 - 160, 0);
+    	glVertex2f(X - r - 10 - 2* radiusX,  Y + r + 10);
+	glEnd();
+	rotate(X - r - 10 , Y + r + 10, la);
 	
+	// Right Leg
+	rotate(X + r - 30 , Y + r + 150, 0.5* rl);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 + 20, 0);
+    	glVertex2f(w/2 + 20,  Y + r + 150 );
+	glEnd();
+	rotate(X + r - 30 , Y + r + 150, -0.5*rl);
+	
+	// Left Leg
+	rotate(X - r + 30 , Y + r + 150, 0.5* -ll);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 - 20, 0);
+    	glVertex2f(w/2 - 20,  Y + r + 150 );
+	glEnd();
+	rotate(X - r + 30 , Y + r + 150, 0.5*ll);
 
-		//Curtains
-		float curtainLeft = w/2;
-		float curtainRight = w/2;
-
- 		for(int i = 0; i < w/2; i ++){
-			glColor3f(232/255.0, 60/255.0, 60/255.0);
-			glClear(GL_COLOR_BUFFER_BIT);
-			// glLoadIdentity();
-			delay(1);
-			
-
-			glBegin(GL_POLYGON);
-			glVertex2i(0, 0); 
-			glVertex2i(curtainLeft - i, 0);
-			glVertex2i(curtainLeft - i, h -120);
-			glVertex2i(0, h -120);
-			glEnd(); 
-
-			// Right
-			glBegin(GL_POLYGON);
-			glVertex2i(curtainRight +  i, 0); 
-			glVertex2i(w, 0);
-			glVertex2i(w,h-120);
-			glVertex2i(curtainRight + i, h-120);
-			glEnd(); 
+	
+	//Walls =====================================================================
+	glColor3f(138/255.0, 109/255.0, 81/255.0);
+	
+	// Right
+	glBegin(GL_POLYGON);		
+	glVertex2i(w - 40, h - 250); 
+	glVertex2i(w, h - 100);
+	glVertex2i(w, 0);
+	glVertex2i(w - 40, 0); 
+	glEnd();
 		
-			glutSwapBuffers();
+	// Left
+	glBegin(GL_POLYGON);		
+	glVertex2i(40, h - 250); 
+	glVertex2i(0, h - 100);
+	glVertex2i(0, 0);
+	glVertex2i(40, 0); 
+	glEnd();
 		
-			//Audience
-			glColor3f(40/255.0, 40/255.0, 40/255.0);
-			ellipse(50, 25, w/2, h-40);
-			circle(w/2, h-90, 35);
+		
+	
+	// Curtains  =====================================================================
+	glColor3f(232/255.0, 60/255.0, 60/255.0);
+	circle(w/2, -400, 500);
+	glColor3f(189/255.0, 34/255.0, 34/255.0);
+	circle(w/2 + 400, -400, 500);
+	circle(w/2 - 400, -400, 500);
+	glColor3f(232/255.0, 60/255.0, 60/255.0);
+	circle(-350, 0, 500);
+	circle(w + 350, 0, 500);
 
-			ellipse(60, 30, w/2 + 390,  h-40);
-			circle(w/2+ 390, h-100, 50);
+	
+	// Ground  =======================================================================
+	glColor3f(0, 0, 0);
+	glBegin(GL_POLYGON);
+	glVertex2i( 0 , h - 80);
+	glVertex2i( w , h - 80);
+	glVertex2i( w , h );
+	glVertex2i( 0 , h );
+	glEnd(); 
 
-			ellipse(60, 30, w/2 - 320, h-40);
-			circle(w/2 - 320, h-100, 50);
 
-			ellipse(60, 30, w/2 + 160, h-40);
-			circle(w/2 + 160, h-100, 50);
+	// Head  =====================================================================
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	circle(X, Y, r);
 
-			ellipse(60 , 30, w/2 - 130, h-40);
-			circle(w/2 - 130, h-100, 50);
 
-			ellipse(50, 25, w/2 - 500, h-40);
-			circle(w/2 - 500, h-90, 35);
+	int e;
+	// Arms  =====================================================================
+
+	// Right  
+	rotate(X - r - 10 , Y + r + 10, -la);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusX, radiusY, X - r - 10 - 1.5*(radiusX),  Y + r + 10);
+	glColor3f(255/255.0, 123/255.0, 0/255.0);
+	ellipse(radiusX, radiusY, X - r - 10 - radiusX/2,  Y + r + 10);
+	rotate(X - r - 10 , Y + r + 10, la);
+	
+	// Left
+	rotate(X + r + 10 , Y + r + 10, ra);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusX, radiusY, X + r + 10 + 1.5*(radiusX),  Y + r + 10);
+	glColor3f(255/255.0, 123/255.0, 0/255.0);
+	ellipse(radiusX, radiusY, X + r + 10 + radiusX/2,  Y + r + 10);
+	rotate(X + r + 10 , Y + r + 10, -ra);
+
+
+	// Legs =====================================================================
+
+	// Right
+	rotate(X + r - 30 , Y + r + 150, rl);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + (1.5*radiusX));
+	glColor3f(68/255.0, 99/255.0, 173/255.0);
+	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + radiusX/2);
+	rotate(X + r - 30 ,Y + r + 150, -rl);
+	
+	// Left
+	rotate(X - r + 30 , Y + r + 150, -ll);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + (1.5*radiusX));
+	glColor3f(68/255.0, 99/255.0, 173/255.0);
+	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + radiusX/2);
+	rotate(X - r + 30 ,Y + r + 150, ll);
+	
+	// Torso =====================================================================
+
+	glColor3f(255/255.0, 123/255.0, 28/255.0);
+	glBegin(GL_POLYGON);
+	glVertex2i(X - r - 10, Y + r); 
+	glVertex2i(X + r + 10, Y + r);
+	glVertex2i(X + r - 15, Y + r + 150);
+	glVertex2i(X - r + 15, Y + r + 150);
+	glEnd(); 
+
+
+	// Moving Curtains  ==========================================================
+ 
+	float curtainLeft = w/2;
+	float curtainRight = w/2;
+
+	{
+		if(open){
+			c = min(t++, w/2);
+		}		
+		else {
+			c = max(t--, 0);		
 		}
+		
+		glColor3f(232/255.0, 60/255.0, 60/255.0);
 
+		delay(1);
+		
+		// Left
+		glBegin(GL_POLYGON);
+		glVertex2i(0, 0); 
+		glVertex2i(curtainLeft - c, 0);
+		glVertex2i(curtainLeft - c, h -120);
+		glVertex2i(0, h -120);
+		glEnd(); 
 
-			
-
-
-		glFlush(); 
-	
+		// Right
+		glBegin(GL_POLYGON);
+		glVertex2i(curtainRight +  c, 0); 
+		glVertex2i(w, 0);
+		glVertex2i(w,h-120);
+		glVertex2i(curtainRight + c, h-120);
+		glEnd();
+		
 	}
+
+
+
+	//Audience  =====================================================================
+	glColor3f(40/255.0, 40/255.0, 40/255.0);
+	ellipse(50, 25, w/2, h-40);
+	circle(w/2, h-90, 35);
+
+	ellipse(60, 30, w/2 + 390,  h-40);
+	circle(w/2+ 390, h-100, 50);
+
+	ellipse(60, 30, w/2 - 320, h-40);
+	circle(w/2 - 320, h-100, 50);
+
+	ellipse(60, 30, w/2 + 160, h-40);
+	circle(w/2 + 160, h-100, 50);
+
+	ellipse(60 , 30, w/2 - 130, h-40);
+	circle(w/2 - 130, h-100, 50);
+
+	ellipse(50, 25, w/2 - 500, h-40);
+	circle(w/2 - 500, h-90, 35);
+
+		
+	glutSwapBuffers(); // Helps prevent flickering 
+	glFlush(); 
+
+
+
 	
 } 
 
@@ -287,19 +354,21 @@ void drawStrokeText(char* string,int x,int y,int z)
 	  glPopMatrix();
 }
 
+
+
 void init()
 {
 	glClearColor(1.0,1.0,0.0,0.0); 
 }
 
 
-void reshape(int w,int h) 
+void reshape(int width,int height) 
 { 
  
-    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    glViewport(0, 0, (GLsizei)width, (GLsizei)height);
     glMatrixMode(GL_PROJECTION); 
     glLoadIdentity(); 
-    gluOrtho2D(0,w,h,0); 
+    gluOrtho2D(0,width ,height,0); 
     glMatrixMode(GL_MODELVIEW); 
     glLoadIdentity(); 
 
@@ -308,9 +377,65 @@ void reshape(int w,int h)
 
 
 void keyPressed (unsigned char key, int x, int y) { 
+
+	if(key == 'r'){
+		// Raises the Right Arm 
+		ra = max(-20 * 3, ra - 20);
+	}	
+
+	if(key == 'f'){
+		// Lowers the Right Arm
+		ra = min(20 , ra + 20);
+	} 
+
+	if(key == 'q'){
+		// Raises the Left Arm 
+		la = max(-20 * 3, la - 20);
+	}	
+
 	if(key == 'a'){
-		stage = 2;
-	}	 
+		// Lowers the Left Arm
+		la = min(20 , la + 20);
+	} 
+
+
+	if(key == 'v'){
+		// Raises the Right Leg 
+		rl = max(-20 * 3, rl - 20);
+	}
+
+	if(key == 'c'){
+		// Lowers the Right Arm
+		rl = min(20 , rl + 20);
+	} 
+	
+	if(key == 'z'){
+		// Raises the Left Leg 
+		ll = max(-20 * 3, ll - 20);
+	}
+
+	if(key == 'x'){
+		// Lowers the Left Leg
+		ll = min(20 , ll + 20);
+	} 
+	if(key == '`'){
+		// Reset show
+		k = 0;	
+	}
+
+	if(key == 'o'){
+		// Open Curtain 
+		open = 1;	
+		t = c; 	
+	}
+
+	if(key == 'p'){
+		// Close Curtain 
+		open = 0;	
+		t = c;
+	}
+	
+	
 }  
 
 
@@ -319,9 +444,6 @@ void keyPressed (unsigned char key, int x, int y) {
 	
 void welcome(void){
 
-	float w = glutGet(GLUT_WINDOW_WIDTH);
-	float h = glutGet(GLUT_WINDOW_HEIGHT);
-	
 	glClear(GL_COLOR_BUFFER_BIT); 
 	glLoadIdentity();
 		
@@ -344,10 +466,7 @@ void welcome(void){
 void render(void)
 {	 	
 	i = 0;
- 	float w = glutGet(GLUT_WINDOW_WIDTH);
-	float h = glutGet(GLUT_WINDOW_HEIGHT);
-	
-
+	t = 0;
 	while( i < h){
 		i++;
 		delay(1);
@@ -372,19 +491,31 @@ void render(void)
 
 
 void display(void){
-	//welcome();
-	//delay(200);
-	//render();
-	puppet();
 
+
+	w = glutGet(GLUT_WINDOW_WIDTH);
+	h = glutGet(GLUT_WINDOW_HEIGHT);
+	
+	if(k < 1)
+		welcome();
+	else if (k < 2)
+		delay(200);
+	else if (k < 3)
+		render();
+	else
+		puppet();
+
+	k++;
 }
 
 
 int main(int argc, char* argv[])
 { 
-	stage = 1;
+	stage = 1;	
+	c = 0; 
+
 	glutInit(&argc, argv); 
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); 
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); 
 
 	// giving window size in X- and Y- direction 
 	glutInitWindowSize(1366, 768); 
