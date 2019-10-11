@@ -132,7 +132,7 @@ void puppet(void)
 	// Right Arm
 	rotate(X + r + 10 , Y + r + 10, ra);
 	glBegin(GL_LINES);
-    	glVertex2f(w/2 + 160, 0);
+    	glVertex2f(w/2 + 160, -200);
     	glVertex2f(X + r + 10 + 2* radiusX,  Y + r + 10);
 	glEnd();
 	rotate(X + r + 10 , Y + r + 10, -ra);
@@ -140,7 +140,7 @@ void puppet(void)
 	// Left Arm 
 	rotate(X - r - 10 , Y + r + 10, -la);
 	glBegin(GL_LINES);
-    	glVertex2f(w/2 - 160, 0);
+    	glVertex2f(w/2 - 160, -200);
     	glVertex2f(X - r - 10 - 2* radiusX,  Y + r + 10);
 	glEnd();
 	rotate(X - r - 10 , Y + r + 10, la);
@@ -424,17 +424,24 @@ void keyPressed (unsigned char key, int x, int y) {
 	}
 
 	if(key == 'o'){
-		// Open Curtain 
+
+		pid_t pid = fork();
+
+		if (pid == 0) {
+		   system("mpg123 spring.mp3");
+		   exit(0);
+		}
+
 		open = 1;	
 		t = c; 	
 	}
 
 	if(key == 'p'){
-		// Close Curtain 
+		// Close Curtain
+
 		open = 0;	
 		t = c;
-	}
-	
+	}	
 	
 }  
 
@@ -514,8 +521,11 @@ int main(int argc, char* argv[])
 	stage = 1;	
 	c = 0; 
 
+
 	glutInit(&argc, argv); 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); 
+
+	
 
 	// giving window size in X- and Y- direction 
 	glutInitWindowSize(1366, 768); 
