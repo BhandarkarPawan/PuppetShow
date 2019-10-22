@@ -1,7 +1,16 @@
+//TODO: Calculate the position of the limbs dynamically 
+//TODO: Impose limits on the rotation of limbs 
+//TODO: Switch to ATOM or Visual Studio 
+//TODO: Add Docstrings and comments 
+//TODO: Code Cleanup
+
+
 #include<GL/glut.h>
 #include<unistd.h>
 #include<math.h>
 #include <iostream>
+#include<cstring>
+
 #define PI 3.141
 #define DEG2RAD 3.14159/180.0
 
@@ -10,6 +19,7 @@
 #define RIGHT_LEG 2
 #define LEFT_LEG 3
 
+// Variable Declaration section ===================================================
 
 int stage, i;
 float w;   // Stores window width
@@ -22,7 +32,11 @@ int open = 0;  // Whether the cutain is being closed or opened
 
 float ra, la, rl, ll;  // Right Arm, Left Arm, Right Leg and Left Leg angles 
 
+FILE *fp;  // To access the command for mouse tracking 
+char mouse_pos[40];
 
+
+// Math functions =================================================================
 
 float max( float a, float b){
 	return a>b ? a : b;
@@ -48,8 +62,10 @@ float distance(float x0, float y0, float x1, float y1){
 	return sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2));
 }
 
-int closest_limb(float x, float y){
 
+int closest_limb(float x, float y){
+		
+	float m, angle; 
 
 	// RIGHT ARM (745, 320) -> (870, 320)
 	// LEFT ARM (625, 320) -> (500, 320)
@@ -64,42 +80,99 @@ int closest_limb(float x, float y){
 	float closest = min(min(min(right_arm, left_arm), right_leg), left_leg);
 	
 	if(closest == right_arm){
-		float m =  slope(745, 320, x,y);
-		float angle  = atan(m)* 180 / PI;
-		printf("Slope =  %f. Angle = %f. ", m , angle);
+		m =  slope(745, 320, x,y);
+		angle  = atan(m)* 180 / PI;
 		ra = angle;
 		return RIGHT_ARM;	
 	}
 	else if(closest == left_arm){
-		float m = slope(625, 320, x,y);
-		float angle  = atan(m)* 180 / PI;
+		m = slope(625, 320, x,y);
+		angle  = atan(m)* 180 / PI;
 		la = -angle;
-		printf("Slope =  %f. Angle = %f. ", m , angle);
 		return LEFT_ARM;	
 	}
 	else if(closest == right_leg){
-		float m = slope(705, 520, x,y);
-		float angle  = atan(m)* 180 / PI;
+		m = slope(705, 520, x,y);
+		angle  = atan(m)* 180 / PI;
 		rl = angle;
-		printf("Slope =  %f. Angle = %f. ", m , angle);
 		return RIGHT_LEG;	
 	}
 	else{
-		float m = slope(665, 520, x,y);
-		float angle  = atan(m)* 180 / PI;
+		m = slope(665, 520, x,y);
+		angle  = atan(m)* 180 / PI;
 		ll = -angle;
-		printf("Slope =  %f. Angle = %f. ", m , angle);
 		return LEFT_LEG;	
 	}
+
+	printf("Slope =  %f. Angle = %f. ", m , angle);
+}
+
+
+int get_number(char s[]){
+	char c;
+	int digit,number=0;
+	for(int k=0;k<strlen(s);k++)
+	{
+		c = s[k];
+		if(c>='0' && c<='9') //to confirm it's a digit
+		{
+			digit = c - '0';
+			number = number*10 + digit;
+		}
+	}
+	return number;
 }
 
 
 int track;
 
+
 void track_mouse(){
 	
-	//TODO : Use popen command to get real time mouse positions
-	// watch -ptn 0 "xdotool getmouselocation"
+
+	 /* Open the command for reading. */
+	fp = popen("/usr/bin/xdotool getmouselocation", "r");
+	  if (fp == NULL) {
+	    printf("Failed to run xdotool.\n" );
+	    exit(1);
+	  }
+
+	char x_pos[10];
+	char y_pos[10]; 
+
+	fgets(mouse_pos, sizeof(mouse_pos)-1, fp);
+	int i; 
+
+	for(i = 0; i < 15; i++){
+		if(mouse_pos[i] == ' '){
+			x_pos[i] = '\0';
+			break;
+		}
+
+		x_pos[i] = mouse_pos[i];	
+	}
+	
+	int x = get_number(x_pos);	
+
+
+	for(int j = i+1; j < 15; j++){
+		if(mouse_pos[j] == ' '){
+			y_pos[j-i] = '\0';
+			break;
+		}
+		y_pos[j-i-1] = mouse_pos[j];	
+	}		
+
+
+	int y = get_number(y_pos);
+	
+	printf("%d, %d\n", x, y );  
+	
+	closest_limb(x,y);
+  	
+	pclose(fp);
+	
+	
 	
 }
 
@@ -107,6 +180,7 @@ void mouse(int mouse, int state, int x, int y){
     switch(mouse){
         case GLUT_LEFT_BUTTON:
             if(state == GLUT_DOWN){
+		track_mouse();
 		track = 1;
 		int limb = closest_limb(x,y);
 		printf("Clicked (%d, %d). Closest limb: %d\n ", x, y, limb);
@@ -130,6 +204,7 @@ void delay(int m)
 {
     for(int d=0; d<2000000 * m; d++);
 }
+
 
 
 void myInit(void) 
@@ -204,7 +279,7 @@ void puppet(void)
 	int radiusY = 10;
 
 	int r = 50; // Size of the head 
-
+	
 	// Floor  =====================================================================
 
 	glColor3f(94/255.0, 64/255.0, 37/255.0);
@@ -546,6 +621,13 @@ void keyPressed (unsigned char key, int x, int y) {
 
 
 
+char pawan[50] = "Pawan Bhandarkar";
+char pavan[50] = "Pavan N";
+char pavithra[50] = "Pavithra B";
+char pawan_usn[50] = "4NM16CS090";
+char pavan_usn[50] = "4NM16CS091";
+char pavithra_usn[50] = "4NM16CS092";
+char title[50] = "A Puppet Show";
 	
 void welcome(void){
 
@@ -556,13 +638,13 @@ void welcome(void){
 	glColor3f(1,1, 1);
     
 	void* font =  GLUT_BITMAP_HELVETICA_18 ;
-	drawBitmapText("Pawan Bhandarkar",w/5,h*2/5,0 ,font);
-	drawBitmapText("4NM16CS090",w*3/5,h*2/5,0,font);
-	drawBitmapText("Pavan N",w/5,h/2,0,font);
-	drawBitmapText("4NM16CS091",w*3/5,h/2,0,font);
-	drawBitmapText("Pavithra B",w/5,h*3/5,0,font);
-	drawBitmapText("4NM16CS092",w*3/5,h*3/5,0,font);
-	drawStrokeText("A Puppet Show",w/2-180,h/5*3.5,0);
+	drawBitmapText(pawan,w/5,h*2/5,0 ,font);
+	drawBitmapText(pawan_usn,w*3/5,h*2/5,0,font);
+	drawBitmapText(pavan,w/5,h/2,0,font);
+	drawBitmapText(pavan_usn,w*3/5,h/2,0,font);
+	drawBitmapText(pavithra,w/5,h*3/5,0,font);
+	drawBitmapText(pavithra_usn,w*3/5,h*3/5,0,font);
+	drawStrokeText(title,w/2-180,h/5*3.5,0);
 	glutSwapBuffers();
 }
 
@@ -582,13 +664,13 @@ void render(void)
 		glColor3f(1,1, 1);
 	    
 		void* font =  GLUT_BITMAP_HELVETICA_18 ;
-		drawBitmapText("Pawan Bhandarkar",w/5,h*2/5 - i,0 ,font);
-		drawBitmapText("4NM16CS090",w*3/5,h*2/5 - i,0,font);
-		drawBitmapText("Pavan N",w/5,h/2-i,0,font);
-		drawBitmapText("4NM16CS091",w*3/5,h/2- i,0,font);
-		drawBitmapText("Pavithra B",w/5,h*3/5- i,0,font);
-		drawBitmapText("4NM16CS092",w*3/5,h*3/5- i,0,font);
-		drawStrokeText("A Puppet Show",w/2-180,h/5*3.5- i,0);
+		drawBitmapText(pawan,w/5,h*2/5 - i,0 ,font);
+		drawBitmapText(pawan_usn,w*3/5,h*2/5 - i,0,font);
+		drawBitmapText(pavan,w/5,h/2 - i,0,font);
+		drawBitmapText(pavan_usn,w*3/5,h/2 - i,0,font);
+		drawBitmapText(pavithra,w/5,h*3/5 - i,0,font);
+		drawBitmapText(pavithra_usn,w*3/5,h*3/5 - i,0,font);
+		drawStrokeText(title,w/2-180,h/5*3.5 - i,0);
 		glutSwapBuffers(); 
 		
 	}	
@@ -596,7 +678,7 @@ void render(void)
 
 
 void display(void){
-
+	
 
 	w = glutGet(GLUT_WINDOW_WIDTH);
 	h = glutGet(GLUT_WINDOW_HEIGHT);
@@ -611,6 +693,10 @@ void display(void){
 		puppet();
 
 	k++;
+
+
+	if(track == 1)
+		track_mouse();
 }
 
 
@@ -618,13 +704,13 @@ int main(int argc, char* argv[])
 { 
 	stage = 1;	
 	c = 0; 
+		
 
 
 	glutInit(&argc, argv); 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); 
 
 	
-
 	// giving window size in X- and Y- direction 
 	glutInitWindowSize(1366, 768); 
 	glutInitWindowPosition(0, 0); 
