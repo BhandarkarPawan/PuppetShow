@@ -1,8 +1,28 @@
 #include<GL/glut.h>
 #include<unistd.h>
 #include<math.h>
-#define pi 3.141
+#include <iostream>
+#define PI 3.141
 #define DEG2RAD 3.14159/180.0
+
+#define RIGHT_ARM 0
+#define LEFT_ARM 1
+#define RIGHT_LEG 2
+#define LEFT_LEG 3
+
+
+int stage, i;
+float w;   // Stores window width
+float h;   // Stores window height
+int k;     // global parameter that decides the display  
+int c;	   // Controls the curtain movement
+int t;     // Used to record time of button click 
+
+int open = 0;  // Whether the cutain is being closed or opened 
+
+float ra, la, rl, ll;  // Right Arm, Left Arm, Right Leg and Left Leg angles 
+
+
 
 float max( float a, float b){
 	return a>b ? a : b;
@@ -16,16 +36,94 @@ float min( float a, float b){
 
 
 
-int stage, i;
-float w;   // Stores window width
-float h;   // Stores window height
-int k;     // global parameter that decides the display  
-int c;	   // Controls the curtain movement
-int t;     // Used to record time of button click 
+float slope(float x0, float y0, float x1, float y1){
 
-int open = 0;  // Whether the cutain is being closed or opened 
+	return (y1 - y0)/(x1- x0);
 
-float ra, la, rl, ll;  // Right Arm, Left Arm, Right Leg and Left Leg angles 
+}
+
+
+float distance(float x0, float y0, float x1, float y1){
+
+	return sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2));
+}
+
+int closest_limb(float x, float y){
+
+
+	// RIGHT ARM (745, 320) -> (870, 320)
+	// LEFT ARM (625, 320) -> (500, 320)
+	// RIGHT LEG (705, 450) -> (705, 590)
+	// LEFT LEG (665, 450) -> (665, 590)
+
+	float right_arm = distance(x,y, 745, 320);
+	float left_arm = distance(x,y, 625, 320);
+	float right_leg = distance(x,y,705, 450);
+	float left_leg = distance(x,y, 665, 450);
+
+	float closest = min(min(min(right_arm, left_arm), right_leg), left_leg);
+	
+	if(closest == right_arm){
+		float m =  slope(745, 320, x,y);
+		float angle  = atan(m)* 180 / PI;
+		printf("Slope =  %f. Angle = %f. ", m , angle);
+		ra = angle;
+		return RIGHT_ARM;	
+	}
+	else if(closest == left_arm){
+		float m = slope(625, 320, x,y);
+		float angle  = atan(m)* 180 / PI;
+		la = -angle;
+		printf("Slope =  %f. Angle = %f. ", m , angle);
+		return LEFT_ARM;	
+	}
+	else if(closest == right_leg){
+		float m = slope(705, 520, x,y);
+		float angle  = atan(m)* 180 / PI;
+		rl = angle;
+		printf("Slope =  %f. Angle = %f. ", m , angle);
+		return RIGHT_LEG;	
+	}
+	else{
+		float m = slope(665, 520, x,y);
+		float angle  = atan(m)* 180 / PI;
+		ll = -angle;
+		printf("Slope =  %f. Angle = %f. ", m , angle);
+		return LEFT_LEG;	
+	}
+}
+
+
+int track;
+
+void track_mouse(){
+	
+	//TODO : Use popen command to get real time mouse positions
+	// watch -ptn 0 "xdotool getmouselocation"
+	
+}
+
+void mouse(int mouse, int state, int x, int y){
+    switch(mouse){
+        case GLUT_LEFT_BUTTON:
+            if(state == GLUT_DOWN){
+		track = 1;
+		int limb = closest_limb(x,y);
+		printf("Clicked (%d, %d). Closest limb: %d\n ", x, y, limb);
+                glutPostRedisplay();
+            }
+	    else{
+		printf("Mouse released\n ");
+		track = 0;
+		}
+
+        break;
+
+    }
+
+}
+
+
 
 
 void delay(int m)
@@ -57,7 +155,7 @@ void myInit(void)
 void circle(float X, float Y, float radius){
 
 	glBegin(GL_POLYGON); 
-	for (float i = 0; i < (2 * pi); i += 0.001) 
+	for (float i = 0; i < (2 * PI); i += 0.001) 
 	{ 
 		float x = radius * cos(i); 
 		float y = radius * sin(i); 
@@ -539,6 +637,7 @@ int main(int argc, char* argv[])
 	glutIdleFunc(display);
         glutReshapeFunc(reshape); 
 	glutKeyboardFunc(keyPressed);
+    	glutMouseFunc(mouse);
 	glutMainLoop(); 
 
 	return 0;
