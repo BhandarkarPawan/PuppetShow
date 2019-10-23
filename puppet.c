@@ -1,14 +1,7 @@
-//TODO: Calculate the position of the limbs dynamically 
-//TODO: Impose limits on the rotation of limbs 
-//TODO: Switch to ATOM or Visual Studio 
-//TODO: Add Docstrings and comments 
-//TODO: Code Cleanup
-
-
 #include<GL/glut.h>
 #include<unistd.h>
 #include<math.h>
-#include <iostream>
+#include<iostream>
 #include<cstring>
 
 #define PI 3.141
@@ -19,7 +12,13 @@
 #define RIGHT_LEG 2
 #define LEFT_LEG 3
 
+
+
 // Variable Declaration section ===================================================
+
+// Stores the reference points of the limbs for calculating angles 
+float ra_x, ra_y, la_x, la_y;
+float rl_x, rl_y, ll_x, ll_y;
 
 int stage, i;
 float w;   // Stores window width
@@ -65,42 +64,65 @@ float distance(float x0, float y0, float x1, float y1){
 
 int closest_limb(float x, float y){
 		
+	// Use Euclidean distance to find out which is the closest reference point
+	// i.e Find out the closest limb and move that limb
+
 	float m, angle; 
 
-	// RIGHT ARM (745, 320) -> (870, 320)
-	// LEFT ARM (625, 320) -> (500, 320)
-	// RIGHT LEG (705, 450) -> (705, 590)
-	// LEFT LEG (665, 450) -> (665, 590)
-
-	float right_arm = distance(x,y, 745, 320);
-	float left_arm = distance(x,y, 625, 320);
-	float right_leg = distance(x,y,705, 450);
-	float left_leg = distance(x,y, 665, 450);
+	float right_arm = distance(x,y, ra_x, ra_y);
+	float left_arm = distance(x,y, la_x, la_y);
+	float right_leg = distance(x,y, rl_x, rl_y);
+	float left_leg = distance(x,y, ll_x, ll_y);
 
 	float closest = min(min(min(right_arm, left_arm), right_leg), left_leg);
 	
 	if(closest == right_arm){
-		m =  slope(745, 320, x,y);
+		// Moving right Arm 
+		m =  slope(ra_x, ra_y, x,y);
 		angle  = atan(m)* 180 / PI;
-		ra = angle;
+
+		if (angle < 0)
+			ra = max(-20 * 3, angle);
+		else 
+			ra = min(20 , angle);
+
 		return RIGHT_ARM;	
 	}
 	else if(closest == left_arm){
-		m = slope(625, 320, x,y);
+		// Moving left Arm 
+		m = slope(la_x, la_y, x,y);
 		angle  = atan(m)* 180 / PI;
-		la = -angle;
+
+
+		if (angle < 0)
+			la = - max(-20 , angle);
+		else 
+			la = - min(20 * 3, angle);
+
 		return LEFT_ARM;	
 	}
 	else if(closest == right_leg){
-		m = slope(705, 520, x,y);
+		// Moving right leg 
+		m = slope(rl_x, rl_y, x,y);
 		angle  = atan(m)* 180 / PI;
-		rl = angle;
+
+		if (angle < 0)
+			rl = max(-20 * 3, angle);
+		else 
+			rl = min(20 , angle);
+
 		return RIGHT_LEG;	
 	}
 	else{
-		m = slope(665, 520, x,y);
-		angle  = atan(m)* 180 / PI;
-		ll = -angle;
+		// Moving left leg 
+		m = slope(ll_x, ll_y, x,y);
+		angle  = atan(m)* 180 / PI; 
+
+		if (angle < 0)
+			ll =  - max(-20 , angle);
+		else 
+			ll = - min(20 * 3 , angle);
+
 		return LEFT_LEG;	
 	}
 
@@ -124,12 +146,11 @@ int get_number(char s[]){
 }
 
 
-int track;
-
+int track;  // Used to check whether mouse is being pressed 
 
 void track_mouse(){
 	
-
+	// Find the position of the mouse while it is pressed down 
 	 /* Open the command for reading. */
 	fp = popen("/usr/bin/xdotool getmouselocation", "r");
 	  if (fp == NULL) {
@@ -177,6 +198,7 @@ void track_mouse(){
 }
 
 void mouse(int mouse, int state, int x, int y){
+    // React to mouse press 
     switch(mouse){
         case GLUT_LEFT_BUTTON:
             if(state == GLUT_DOWN){
@@ -266,6 +288,9 @@ void rotate(float x, float y, float angle){
 
 void puppet(void)  
 { 
+
+
+
 	glColor3f(0/255.0, 0/255.0, 0/255.0);
 	glClear(GL_COLOR_BUFFER_BIT); 
 
@@ -282,10 +307,12 @@ void puppet(void)
 	
 	// Floor  =====================================================================
 
-	glColor3f(94/255.0, 64/255.0, 37/255.0);
+
+	glColor3f(0,0,0);
 	glBegin(GL_POLYGON);
 	glVertex2i( 40, h - 250); 
 	glVertex2i( w - 40,  h - 250);
+	glColor3f(94/255.0, 64/255.0, 37/255.0);
 	glVertex2i(w, h - 100);
 	glVertex2i( 0 , h - 100);
 	glEnd(); 
@@ -303,6 +330,7 @@ void puppet(void)
 	glColor3f(1, 1, 1);
 
 	// Right Arm
+	
 	rotate(X + r + 10 , Y + r + 10, ra);
 	glBegin(GL_LINES);
     	glVertex2f(w/2 + 160, -200);
@@ -336,22 +364,28 @@ void puppet(void)
 
 	
 	//Walls =====================================================================
-	glColor3f(138/255.0, 109/255.0, 81/255.0);
+
 	
 	// Right
-	glBegin(GL_POLYGON);		
+	glBegin(GL_POLYGON);	
+	glColor3f(0,0,0);
+	glVertex2i(w - 40, 0); 
 	glVertex2i(w - 40, h - 250); 
+	glColor3f(138/255.0, 109/255.0, 81/255.0);
 	glVertex2i(w, h - 100);
 	glVertex2i(w, 0);
-	glVertex2i(w - 40, 0); 
+
 	glEnd();
 		
 	// Left
-	glBegin(GL_POLYGON);		
+	glBegin(GL_POLYGON);	
+	glColor3f(0,0,0);
+	glVertex2i(40, 0); 	
 	glVertex2i(40, h - 250); 
+	glColor3f(138/255.0, 109/255.0, 81/255.0);
 	glVertex2i(0, h - 100);
 	glVertex2i(0, 0);
-	glVertex2i(40, 0); 
+
 	glEnd();
 		
 		
@@ -393,6 +427,9 @@ void puppet(void)
 	ellipse(radiusX, radiusY, X - r - 10 - radiusX/2,  Y + r + 10);
 	rotate(X - r - 10 , Y + r + 10, la);
 	
+	la_x = X - r - 10 - radiusX/2;
+	la_y = Y + r + 10;
+
 	// Left
 	rotate(X + r + 10 , Y + r + 10, ra);
 	glColor3f(209/255.0, 175/255.0, 90/255.0);
@@ -401,6 +438,8 @@ void puppet(void)
 	ellipse(radiusX, radiusY, X + r + 10 + radiusX/2,  Y + r + 10);
 	rotate(X + r + 10 , Y + r + 10, -ra);
 
+	ra_x = X + r + 10  + radiusX/2;
+	ra_y = Y + r + 10;
 
 	// Legs =====================================================================
 
@@ -412,6 +451,9 @@ void puppet(void)
 	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + radiusX/2);
 	rotate(X + r - 30 ,Y + r + 150, -rl);
 	
+	rl_x = X + r - 30;
+	rl_y = Y + r + 150 + radiusX/2;
+
 	// Left
 	rotate(X - r + 30 , Y + r + 150, -ll);
 	glColor3f(209/255.0, 175/255.0, 90/255.0);
@@ -419,6 +461,9 @@ void puppet(void)
 	glColor3f(68/255.0, 99/255.0, 173/255.0);
 	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + radiusX/2);
 	rotate(X - r + 30 ,Y + r + 150, ll);
+
+	ll_x = X - r + 30;
+	ll_y = Y + r + 150 + radiusX/2;
 	
 	// Torso =====================================================================
 
@@ -426,6 +471,8 @@ void puppet(void)
 	glBegin(GL_POLYGON);
 	glVertex2i(X - r - 10, Y + r); 
 	glVertex2i(X + r + 10, Y + r);
+
+	glColor3f(255/255.0, 255/255.0, 28/255.0);
 	glVertex2i(X + r - 15, Y + r + 150);
 	glVertex2i(X - r + 15, Y + r + 150);
 	glEnd(); 
@@ -444,27 +491,34 @@ void puppet(void)
 			c = max(t--, 0);		
 		}
 		
-		glColor3f(232/255.0, 60/255.0, 60/255.0);
+
 
 		delay(1);
 		
 		// Left
 		glBegin(GL_POLYGON);
-		glVertex2i(0, 0); 
+		glColor3f(232/255.0, 30/255.0, 30/255.0);
 		glVertex2i(curtainLeft - c, 0);
 		glVertex2i(curtainLeft - c, h -120);
+		glColor3f(232/255.0, 70/255.0, 70/255.0);
 		glVertex2i(0, h -120);
+		glVertex2i(0, 0); 
 		glEnd(); 
 
 		// Right
 		glBegin(GL_POLYGON);
+		glColor3f(232/255.0, 30/255.0, 30/255.0);
+		glVertex2i(curtainRight + c, h-120);
 		glVertex2i(curtainRight +  c, 0); 
+		glColor3f(232/255.0, 70/255.0, 70/255.0);
 		glVertex2i(w, 0);
 		glVertex2i(w,h-120);
-		glVertex2i(curtainRight + c, h-120);
+
 		glEnd();
 		
 	}
+
+	
 
 
 
@@ -490,6 +544,8 @@ void puppet(void)
 
 		
 	glutSwapBuffers(); // Helps prevent flickering 
+
+
 	glFlush(); 
 
 
@@ -597,6 +653,7 @@ void keyPressed (unsigned char key, int x, int y) {
 	}
 
 	if(key == 'o'){
+		/*
 
 		pid_t pid = fork();
 
@@ -604,9 +661,11 @@ void keyPressed (unsigned char key, int x, int y) {
 		   system("mpg123 spring.mp3");
 		   exit(0);
 		}
-
+			
+		*/ 
 		open = 1;	
 		t = c; 	
+
 	}
 
 	if(key == 'p'){
@@ -683,6 +742,7 @@ void display(void){
 	w = glutGet(GLUT_WINDOW_WIDTH);
 	h = glutGet(GLUT_WINDOW_HEIGHT);
 	
+	/* 
 	if(k < 1)
 		welcome();
 	else if (k < 2)
@@ -690,6 +750,7 @@ void display(void){
 	else if (k < 3)
 		render();
 	else
+	*/
 		puppet();
 
 	k++;
