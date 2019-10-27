@@ -3,6 +3,10 @@
 #include<math.h>
 #include<iostream>
 #include<cstring>
+#include <sys/types.h>
+#include <signal.h>
+#include <sys/wait.h>
+
 
 #define PI 3.141
 #define DEG2RAD 3.14159/180.0
@@ -36,7 +40,7 @@ char mouse_pos[40];
 
 float pos_Y, pos_X, r;
 
-
+pid_t pid;
 
 // Math functions =================================================================
 
@@ -202,6 +206,8 @@ void track_mouse(){
 
 
 int dance = 0;
+int p_c = 2;
+int head = 0; // Check if head is clicked to move entire puppet 
 
 void mouse(int mouse, int state, int x, int y){
     // React to mouse press 
@@ -212,14 +218,44 @@ void mouse(int mouse, int state, int x, int y){
 		if(x > 100 && y > pos_Y + r + 10 && x < 200 && y < pos_Y + r + 80){
 			printf("Button 1 clicked\n");
 			dance = 1;
-			
+
+
+			if(pid > 0){
+				system("ps");
+				printf("ABOUT TO KILL MUSIC\n");
+				system("pkill -9 play");
+				printf("ABOUT TO KILL PID : %d\n", pid);
+				kill(pid , SIGKILL);
+				wait(NULL);
+				system("ps");
+			}
+
+			pid = fork();
+			if(pid == 0) 
+				system("play jeet.mp3");
+
+		
+				
 		}
 
 		else if(x > 100 && y > pos_Y + r + 150 && x < 200 && y < pos_Y + r + 220){
 			printf("Button 2 clicked\n");
 			dance = 2;
-		}
+			if(pid > 0){
+				system("ps");
+				printf("ABOUT TO KILL MUSIC\n");
+				system("pkill -9 play");
+				printf("ABOUT TO KILL PID : %d\n", pid);
+				kill(pid , SIGKILL);
+				wait(NULL);
+				system("ps");
+			}
 
+			pid = fork();
+			if(pid == 0) 
+				system("play barso.mp3");
+
+		}
 
 
 		track_mouse();
@@ -510,7 +546,7 @@ void puppet(int X, int Y )
 
 	if( dance == 1){
 	// Do the First type of dance 
-	if( k % 100 == 0){
+	if( k % 50 == 0){
 		if(step == 1){
 			ra = 30;
 			la = -30;
@@ -551,7 +587,7 @@ void puppet(int X, int Y )
 
 	if( dance == 2){
 	// Do the Second type of dance 
-	if( k % 100 == 0){
+	if( k % 50 == 0){
 		if(step == 1){
 			ra = -30;
 			la = -30;
@@ -812,18 +848,17 @@ void keyPressed (unsigned char key, int x, int y) {
 	}
 
 	if(key == 'o'){
-
-
-		pid_t pid = fork();
-
-		if (pid == 0) {
-		   system("mpg123 spring.mp3");
-		   exit(0);
-		}
 			
-
 		open = 1;	
 		t = c; 	
+
+		pid = fork();
+		printf("\nThe music process is : %d\n", pid);
+
+		if (pid == 0) {   
+			system("play spring.mp3");
+		}
+		
 
 	}
 
