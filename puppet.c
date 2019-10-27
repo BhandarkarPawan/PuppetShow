@@ -34,6 +34,9 @@ float ra, la, rl, ll;  // Right Arm, Left Arm, Right Leg and Left Leg angles
 FILE *fp;  // To access the command for mouse tracking 
 char mouse_pos[40];
 
+float pos_Y, pos_X, r;
+
+
 
 // Math functions =================================================================
 
@@ -197,15 +200,32 @@ void track_mouse(){
 	
 }
 
+
+int dance = 0;
+
 void mouse(int mouse, int state, int x, int y){
     // React to mouse press 
     switch(mouse){
         case GLUT_LEFT_BUTTON:
             if(state == GLUT_DOWN){
+		
+		if(x > 100 && y > pos_Y + r + 10 && x < 200 && y < pos_Y + r + 80){
+			printf("Button 1 clicked\n");
+			dance = 1;
+			
+		}
+
+		else if(x > 100 && y > pos_Y + r + 150 && x < 200 && y < pos_Y + r + 220){
+			printf("Button 2 clicked\n");
+			dance = 2;
+		}
+
+
+
 		track_mouse();
 		track = 1;
 		int limb = closest_limb(x,y);
-		printf("Clicked (%d, %d). Closest limb: %d\n ", x, y, limb);
+		printf("Dance = %d, Clicked (%d, %d). Closest limb: %d\n ", dance, x, y, limb);
                 glutPostRedisplay();
             }
 	    else{
@@ -284,11 +304,80 @@ void rotate(float x, float y, float angle){
 	glRotatef(angle,0.0,0.0,1.0); // 2. Rotate the object.
 	glTranslatef(-x,-y,0.0); // 1. Translate to the origin.
 }
+
+
+// Text Commands =============================================================
+
+void drawBitmapText(char *string,float x,float y,float z,void* style) 
+{  
+	char *c;
+	glRasterPos3f(x, y-100,z);
+    
+
+	for (c=string; *c != '\0'; c++) 
+	{
+		glutBitmapCharacter(style, *c);		
+	}
+}
+
+
+
+
+void drawStrokeText(char* string,int x,int y,int z)
+{
+	  char *c;
+	  glPushMatrix();
+	  glTranslatef(x,y,z);
+	  glScalef(.28f,-0.7f,z);	
+	
+          glPointSize(3.0);
+	  for (c=string; *c != '\0'; c++)
+	  {
+    		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN , *c);
+	  }
+	  glPopMatrix();
+}
+
+int step = 1;
+
+// Buttons ================================================================
+
+void buttons(void){
+
+	void* font =  GLUT_BITMAP_HELVETICA_18 ;
+
+	glColor3f(1,1,1);
+	glBegin(GL_POLYGON);
+
+	glVertex2i(100, pos_Y + 60);
+	glVertex2i(200, pos_Y + 60);
+	glVertex2i(200, pos_Y + 130);
+	glVertex2i(100, pos_Y + 130);
+	glEnd();
+
+	glBegin(GL_POLYGON);
+	glVertex2i(100, pos_Y + 200);
+	glVertex2i(200, pos_Y + 200);
+	glVertex2i(200, pos_Y + 270);
+	glVertex2i(100, pos_Y + 270);
+	glEnd();
+
+
+	glColor3f(0,0,0);
+	drawBitmapText("Music 1" , 120, pos_Y + r + 150 ,0,font);
+
+	glColor3f(0,0,0);
+	drawBitmapText("Music 2" , 120, pos_Y + r + 290 ,0,font);
+
+
+}
+
+
  
+// Main Puppet =====================================================================
 
-void puppet(void)  
+void puppet(int X, int Y )  
 { 
-
 
 
 	glColor3f(0/255.0, 0/255.0, 0/255.0);
@@ -296,14 +385,11 @@ void puppet(void)
 
 	float x, y, i; 
 
-	// Reference point used to draw rest of the puppet.  			
-	float Y = h/3;
-	float X = w/2;
 
 	int radiusX = 50;
 	int radiusY = 10;
 
-	int r = 50; // Size of the head 
+	r = 50; // Size of the head 
 	
 	// Floor  =====================================================================
 
@@ -324,6 +410,8 @@ void puppet(void)
 	glVertex2i( 0 , h - 80);
 	glVertex2i( w , h - 80);
 	glEnd(); 
+
+
 
 	
 	// Strings  =====================================================================
@@ -417,6 +505,93 @@ void puppet(void)
 
 
 	int e;
+
+	// Dance ====================================================================
+
+	if( dance == 1){
+	// Do the First type of dance 
+	if( k % 100 == 0){
+		if(step == 1){
+			ra = 30;
+			la = -30;
+			rl = 30;
+			ll = -30;	
+			
+			step = 2;			
+			}
+
+		else if(step == 2){
+			ra = 0;
+			la = 0;
+			rl = 0;
+			ll = 0;	
+			
+			step = 3;			
+			}
+
+		else if(step == 3){
+			ra = -30;
+			la = 30;
+			rl = -30;
+			ll = 30;	
+			
+			step = 4;			
+			}
+
+		else if(step == 4){
+			ra = 0;
+			la = 0;
+			rl = 0;
+			ll = 0;	
+			
+			step = 1;			
+			}
+		}
+	}
+
+	if( dance == 2){
+	// Do the Second type of dance 
+	if( k % 100 == 0){
+		if(step == 1){
+			ra = -30;
+			la = -30;
+			rl = 30;
+			ll = 30;	
+			
+			step = 2;			
+			}
+
+		else if(step == 2){
+			ra = 0;
+			la = 0;
+			rl = 0;
+			ll = 0;	
+			
+			step = 3;			
+			}
+
+		else if(step == 3){
+			ra = 30;
+			la = 30;
+			rl = -30;
+			ll = -30;	
+			
+			step = 4;			
+			}
+
+		else if(step == 4){
+			ra = 0;
+			la = 0;
+			rl = 0;
+			ll = 0;	
+			
+			step = 1;			
+			}
+		}
+	}
+
+
+
 	// Arms  =====================================================================
 
 	// Right  
@@ -475,7 +650,12 @@ void puppet(void)
 	glColor3f(255/255.0, 255/255.0, 28/255.0);
 	glVertex2i(X + r - 15, Y + r + 150);
 	glVertex2i(X - r + 15, Y + r + 150);
+
+
 	glEnd(); 
+
+	buttons();
+
 
 
 	// Moving Curtains  ==========================================================
@@ -542,46 +722,19 @@ void puppet(void)
 	ellipse(50, 25, w/2 - 500, h-40);
 	circle(w/2 - 500, h-90, 35);
 
-		
+
+
+	
+
+
 	glutSwapBuffers(); // Helps prevent flickering 
-
-
+		
 	glFlush(); 
 
 
 
 	
 } 
-
-void drawBitmapText(char *string,float x,float y,float z,void* style) 
-{  
-	char *c;
-	glRasterPos3f(x, y-100,z);
-    
-
-	for (c=string; *c != '\0'; c++) 
-	{
-		glutBitmapCharacter(style, *c);		
-	}
-}
-
-
-
-
-void drawStrokeText(char* string,int x,int y,int z)
-{
-	  char *c;
-	  glPushMatrix();
-	  glTranslatef(x,y,z);
-	  glScalef(.28f,-0.7f,z);	
-	
-          glPointSize(3.0);
-	  for (c=string; *c != '\0'; c++)
-	  {
-    		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN , *c);
-	  }
-	  glPopMatrix();
-}
 
 
 
@@ -606,6 +759,12 @@ void reshape(int width,int height)
 
 
 void keyPressed (unsigned char key, int x, int y) { 
+	
+	if(key == 'g'){
+		// Stop Dance
+		dance = 0;
+	}
+
 
 	if(key == 'r'){
 		// Raises the Right Arm 
@@ -653,7 +812,7 @@ void keyPressed (unsigned char key, int x, int y) {
 	}
 
 	if(key == 'o'){
-		/*
+
 
 		pid_t pid = fork();
 
@@ -662,7 +821,7 @@ void keyPressed (unsigned char key, int x, int y) {
 		   exit(0);
 		}
 			
-		*/ 
+
 		open = 1;	
 		t = c; 	
 
@@ -676,6 +835,8 @@ void keyPressed (unsigned char key, int x, int y) {
 	}	
 	
 }  
+
+
 
 
 
@@ -738,11 +899,12 @@ void render(void)
 
 void display(void){
 	
-
 	w = glutGet(GLUT_WINDOW_WIDTH);
 	h = glutGet(GLUT_WINDOW_HEIGHT);
-	
-	/* 
+
+	pos_Y = h/3;
+	pos_X = w/2;
+
 	if(k < 1)
 		welcome();
 	else if (k < 2)
@@ -750,8 +912,8 @@ void display(void){
 	else if (k < 3)
 		render();
 	else
-	*/
-		puppet();
+
+		puppet(pos_X, pos_Y);
 
 	k++;
 
@@ -765,8 +927,6 @@ int main(int argc, char* argv[])
 { 
 	stage = 1;	
 	c = 0; 
-		
-
 
 	glutInit(&argc, argv); 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); 
