@@ -357,8 +357,6 @@ void drawBitmapText(char *string,float x,float y,float z,void* style)
 }
 
 
-
-
 void drawStrokeText(char* string,int x,int y,int z)
 {
 	  char *c;
@@ -379,7 +377,6 @@ int step = 1;
 // Buttons ================================================================
 
 void buttons(void){
-
 	void* font =  GLUT_BITMAP_HELVETICA_18 ;
 
 	glColor3f(1,1,1);
@@ -398,14 +395,11 @@ void buttons(void){
 	glVertex2i(100, pos_Y + 270);
 	glEnd();
 
-
 	glColor3f(0,0,0);
 	drawBitmapText("Music 1" , 120, pos_Y + r + 150 ,0,font);
 
 	glColor3f(0,0,0);
 	drawBitmapText("Music 2" , 120, pos_Y + r + 290 ,0,font);
-
-
 }
 
 
@@ -414,7 +408,6 @@ void buttons(void){
 
 void puppet(int X, int Y )  
 { 
-
 
 	glColor3f(0/255.0, 0/255.0, 0/255.0);
 	glClear(GL_COLOR_BUFFER_BIT); 
@@ -446,9 +439,6 @@ void puppet(int X, int Y )
 	glVertex2i( 0 , h - 80);
 	glVertex2i( w , h - 80);
 	glEnd(); 
-
-
-
 	
 	// Strings  =====================================================================
 	glColor3f(1, 1, 1);
@@ -488,7 +478,6 @@ void puppet(int X, int Y )
 
 	
 	//Walls =====================================================================
-
 	
 	// Right
 	glBegin(GL_POLYGON);	
@@ -514,15 +503,7 @@ void puppet(int X, int Y )
 		
 		
 	
-	// Curtains  =====================================================================
-	glColor3f(232/255.0, 60/255.0, 60/255.0);
-	circle(w/2, -400, 500);
-	glColor3f(189/255.0, 34/255.0, 34/255.0);
-	circle(w/2 + 400, -400, 500);
-	circle(w/2 - 400, -400, 500);
-	glColor3f(232/255.0, 60/255.0, 60/255.0);
-	circle(-350, 0, 500);
-	circle(w + 350, 0, 500);
+	
 
 	
 	// Ground  =======================================================================
@@ -533,11 +514,6 @@ void puppet(int X, int Y )
 	glVertex2i( w , h );
 	glVertex2i( 0 , h );
 	glEnd(); 
-
-
-	// Head  =====================================================================
-	glColor3f(209/255.0, 175/255.0, 90/255.0);
-	circle(X, Y, r);
 
 
 	int e;
@@ -625,6 +601,11 @@ void puppet(int X, int Y )
 			}
 		}
 	}
+	
+
+	// Head  =====================================================================
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	circle(X, Y, r);
 
 
 
@@ -689,8 +670,239 @@ void puppet(int X, int Y )
 
 
 	glEnd(); 
+	
+	// PUPPET 2 =================================================================
+	X = X + 600;
+	Y = Y + 200;
+	glScaled(0.8,0.8,0.8);
 
-	buttons();
+	// Strings  =====================================================================
+	glColor3f(1, 1, 1);
+
+	// Right Arm
+	
+	rotate(X + r + 10 , Y + r + 10, ra);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 + 760, -200);
+    	glVertex2f(X + r + 10 + 2* radiusX,  Y + r + 10);
+	glEnd();
+	rotate(X + r + 10 , Y + r + 10, -ra);
+
+	// Left Arm 
+	rotate(X - r - 10 , Y + r + 10, -la);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 + 440, -200);
+    	glVertex2f(X - r - 10 - 2* radiusX,  Y + r + 10);
+	glEnd();
+	rotate(X - r - 10 , Y + r + 10, la);
+	
+	// Right Leg
+	rotate(X + r - 30 , Y + r + 150, 0.5* rl);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 + 620, 0);
+    	glVertex2f(w/2 + 620,  Y + r + 150 );
+	glEnd();
+	rotate(X + r - 30 , Y + r + 150, -0.5*rl);
+	
+	// Left Leg
+	rotate(X - r + 30 , Y + r + 150, 0.5* -ll);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 + 580, 0);
+    	glVertex2f(w/2 +580,  Y + r + 150 );
+	glEnd();
+	rotate(X - r + 30 , Y + r + 150, 0.5*ll);
+
+	// Head  =====================================================================
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	circle(X, Y, r);
+
+
+	
+	// Arms  =====================================================================
+
+	// Right  
+	rotate(X - r - 10 , Y + r + 10, -la);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusX, radiusY, X - r - 10 - 1.5*(radiusX),  Y + r + 10);
+	glColor3f(255/255.0, 0/255.0, 0/255.0);
+	ellipse(radiusX, radiusY, X - r - 10 - radiusX/2,  Y + r + 10);
+	rotate(X - r - 10 , Y + r + 10, la);
+	
+	la_x = X - r - 10 - radiusX/2;
+	la_y = Y + r + 10;
+
+	// Left
+	rotate(X + r + 10 , Y + r + 10, ra);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusX, radiusY, X + r + 10 + 1.5*(radiusX),  Y + r + 10);
+	glColor3f(255/255.0, 0/255.0, 0/255.0);
+	ellipse(radiusX, radiusY, X + r + 10 + radiusX/2,  Y + r + 10);
+	rotate(X + r + 10 , Y + r + 10, -ra);
+
+	ra_x = X + r + 10  + radiusX/2;
+	ra_y = Y + r + 10;
+
+	// Legs =====================================================================
+
+	// Right
+	rotate(X + r - 30 , Y + r + 150, rl);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + (1.5*radiusX));
+	glColor3f(68/255.0, 99/255.0, 173/255.0);
+	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + radiusX/2);
+	rotate(X + r - 30 ,Y + r + 150, -rl);
+	
+	rl_x = X + r - 30;
+	rl_y = Y + r + 150 + radiusX/2;
+
+	// Left
+	rotate(X - r + 30 , Y + r + 150, -ll);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + (1.5*radiusX));
+	glColor3f(68/255.0, 99/255.0, 173/255.0);
+	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + radiusX/2);
+	rotate(X - r + 30 ,Y + r + 150, ll);
+
+	ll_x = X - r + 30;
+	ll_y = Y + r + 150 + radiusX/2;
+	
+	// Torso =====================================================================
+
+	glColor3f(255/255.0, 0/255.0, 0/255.0);
+	glBegin(GL_POLYGON);
+	glVertex2i(X - r - 10, Y + r); 
+	glVertex2i(X + r + 10, Y + r);
+
+	glColor3f(255/255.0, 100/255.0, 100/255.0);
+	glVertex2i(X + r - 15, Y + r + 150);
+	glVertex2i(X - r + 15, Y + r + 150);
+
+
+	glEnd(); 
+
+	glScaled(1.25, 1.25,1.25);
+
+	// PUPPET 3 =================================================================
+	X = X - 800;
+	glScaled(0.8,0.8,0.8);
+
+	// Strings  =====================================================================
+	glColor3f(1, 1, 1);
+
+	// Right Arm
+	
+	rotate(X + r + 10 , Y + r + 10, ra);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2  - 40, -200);
+    	glVertex2f(X + r + 10 + 2* radiusX,  Y + r + 10);
+	glEnd();
+	rotate(X + r + 10 , Y + r + 10, -ra);
+
+	// Left Arm 
+	rotate(X - r - 10 , Y + r + 10, -la);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 - 360, -200);
+    	glVertex2f(X - r - 10 - 2* radiusX,  Y + r + 10);
+	glEnd();
+	rotate(X - r - 10 , Y + r + 10, la);
+	
+	// Right Leg
+	rotate(X + r - 30 , Y + r + 150, 0.5* rl);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 - 180, 0);
+    	glVertex2f(w/2  - 180,  Y + r + 150 );
+	glEnd();
+	rotate(X + r - 30 , Y + r + 150, -0.5*rl);
+	
+	// Left Leg
+	rotate(X - r + 30 , Y + r + 150, 0.5* -ll);
+	glBegin(GL_LINES);
+    	glVertex2f(w/2 - 220, 0);
+    	glVertex2f(w/2 - 220,  Y + r + 150 );
+	glEnd();
+	rotate(X - r + 30 , Y + r + 150, 0.5*ll);
+	// Head  =====================================================================
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	circle(X, Y, r);
+
+
+
+	// Arms  =====================================================================
+
+	// Right  
+	rotate(X - r - 10 , Y + r + 10, -la);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusX, radiusY, X - r - 10 - 1.5*(radiusX),  Y + r + 10);
+	glColor3f(0/255.0, 125/255.0, 0/255.0);
+	ellipse(radiusX, radiusY, X - r - 10 - radiusX/2,  Y + r + 10);
+	rotate(X - r - 10 , Y + r + 10, la);
+	
+	la_x = X - r - 10 - radiusX/2;
+	la_y = Y + r + 10;
+
+	// Left
+	rotate(X + r + 10 , Y + r + 10, ra);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusX, radiusY, X + r + 10 + 1.5*(radiusX),  Y + r + 10);
+	glColor3f(0/255.0, 125/255.0, 0/255.0);
+	ellipse(radiusX, radiusY, X + r + 10 + radiusX/2,  Y + r + 10);
+	rotate(X + r + 10 , Y + r + 10, -ra);
+
+	ra_x = X + r + 10  + radiusX/2;
+	ra_y = Y + r + 10;
+
+	// Legs =====================================================================
+
+	// Right
+	rotate(X + r - 30 , Y + r + 150, rl);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + (1.5*radiusX));
+	glColor3f(68/255.0, 99/255.0, 173/255.0);
+	ellipse(radiusY, radiusX, X + r - 30,  Y + r + 150 + radiusX/2);
+	rotate(X + r - 30 ,Y + r + 150, -rl);
+	
+	rl_x = X + r - 30;
+	rl_y = Y + r + 150 + radiusX/2;
+
+	// Left
+	rotate(X - r + 30 , Y + r + 150, -ll);
+	glColor3f(209/255.0, 175/255.0, 90/255.0);
+	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + (1.5*radiusX));
+	glColor3f(68/255.0, 99/255.0, 173/255.0);
+	ellipse(radiusY, radiusX, X - r + 30,  Y + r + 150 + radiusX/2);
+	rotate(X - r + 30 ,Y + r + 150, ll);
+
+	ll_x = X - r + 30;
+	ll_y = Y + r + 150 + radiusX/2;
+	
+	// Torso =====================================================================
+
+	glColor3f(0/255.0, 125/255.0, 0/255.0);
+	glBegin(GL_POLYGON);
+	glVertex2i(X - r - 10, Y + r); 
+	glVertex2i(X + r + 10, Y + r);
+
+	glColor3f(100/255.0, 180/255.0, 100/255.0);
+	glVertex2i(X + r - 15, Y + r + 150);
+	glVertex2i(X - r + 15, Y + r + 150);
+
+
+	glEnd(); 
+
+	glScaled(1.25, 1.25,1.25);
+
+
+	buttons();	
+	
+	// Curtains  =====================================================================
+	glColor3f(232/255.0, 60/255.0, 60/255.0);
+	circle(w/2, -400, 500);
+	glColor3f(189/255.0, 34/255.0, 34/255.0);
+	circle(w/2 + 400, -400, 500);
+	circle(w/2 - 400, -400, 500);
+	glColor3f(232/255.0, 60/255.0, 60/255.0);
+	circle(-350, 0, 500);
+	circle(w + 350, 0, 500);
 
 
 
@@ -940,16 +1152,15 @@ void display(void){
 	pos_Y = h/3;
 	pos_X = w/2;
 
-	if(k < 1)
+	cif(k < 1)
 		welcome();
 	else if (k < 2)
 		delay(200);
 	else if (k < 3)
 		render();
 	else
-
+	 
 		puppet(pos_X, pos_Y);
-
 	k++;
 
 
